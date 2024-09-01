@@ -32,7 +32,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gray-100 dark:bg-gray-900">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 ">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
         <div className="flex justify-center mb-6">
           <Image
             src="/next.svg"
@@ -48,7 +48,9 @@ export default function Home() {
         </h1>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Email
+            </label>
             <Input
               type="email"
               value={email}
@@ -58,7 +60,9 @@ export default function Home() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Password
+            </label>
             <Input
               type="password"
               value={password}
@@ -72,7 +76,9 @@ export default function Home() {
             <div className="w-full">
               {isAuthenticated ? (
                 <Link href="/dashboard" className="w-full inline-block">
-                  <Button className="w-full bg-blue-600 dark:bg-blue-700 text-white">Login</Button>
+                  <Button className="w-full bg-blue-600 dark:bg-blue-700 text-white">
+                    Go to Dashboard
+                  </Button>
                 </Link>
               ) : (
                 <Button type="submit" className="w-full bg-blue-600 dark:bg-blue-700 text-white">

@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14
+    container_name: portfolio-db
+    restart: on-failure
+    ports:
+      - "127.0.0.1:5432:5432"
+    env_file:
+      - .env.local
+    volumes:
+      - postgres_data:/var/lib/postgresql_db/data
+
+volumes:
+  postgres_data:

@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  username      String   @unique
+  email         String   @unique
+  password_hash String
+  portfolios    Portfolio[]
+  wallets       Wallet[]
+  transactions  Transaction[]
+  alerts        Alert[]
+  settings      UserSettings?
+}
+
+model Portfolio {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  name        String
+  description String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+
+  user         User                        @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+  coins        PortfolioToCryptocurrency[]
+}
+
+model Cryptocurrency {
+  id            Int       @id @default(autoincrement())
+  symbol        String    @unique
+  name          String
+  current_price Float?
+  market_cap    Float?
+  last_updated  DateTime?
+
+  transactions Transaction[]
+  priceHistory PriceHistory[]
+  alerts       Alert[]
+  portfolios   PortfolioToCryptocurrency[]
+}
+
+model Wallet {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  name       String
+  address    String?
+  type       String
+  created_at DateTime @default(now())
+
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+}
+
+model Transaction {
+  id               Int       @id @default(autoincrement())
+  userId           Int
+  portfolioId      Int
+  cryptoId         Int
+  walletId         Int
+  type             String
+  amount           Float
+  price_per_coin   Float?
+  total_value      Float?
+  fee              Float?
+  transaction_date DateTime?
+  created_at       DateTime  @default(now())
+
+  user           User           @relation(fields: [userId], references: [id])
+  portfolio      Portfolio      @relation(fields: [portfolioId], references: [id])
+  cryptocurrency Cryptocurrency @relation(fields: [cryptoId], references: [id])
+  wallet         Wallet         @relation(fields: [walletId], references: [id])
+}
+
+model PriceHistory {
+  id         Int      @id @default(autoincrement())
+  cryptoId   Int
+  price      Float
+  volume     Float?
+  market_cap Float?
+  timestamp  DateTime @default(now())
+
+  cryptocurrency Cryptocurrency @relation(fields: [cryptoId], references: [id])
+}
+
+model Alert {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  cryptoId   Int
+  type       String
+  threshold  Float
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+
+  user           User           @relation(fields: [userId], references: [id])
+  cryptocurrency Cryptocurrency @relation(fields: [cryptoId], references: [id])
+}
+
+model UserSettings {
+  id                       Int      @id @default(autoincrement())
+  userId                   Int      @unique
+  currency_preference      String   @default("USD")
+  theme_preference         String   @default("light")
+  notification_preferences Json?
+  updated_at               DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model PortfolioToCryptocurrency {
+  portfolio        Portfolio      @relation(fields: [portfolioId], references: [id])
+  cryptocurrency   Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id])
+  portfolioId      Int
+  cryptocurrencyId Int
+
+  @@id([portfolioId, cryptocurrencyId]) // This defines a composite primary key
+}

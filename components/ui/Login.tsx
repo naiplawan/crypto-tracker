@@ -1,53 +1,75 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation'; // Use correct import for Next.js 13+
 
 export default function Login() {
-  const { login, isAuthenticated } = useAuth();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(username, password);
+    setError('');
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Something went wrong');
+        return;
+      }
+
+      console.log('Logged in successfully with User ID:', data.userId);
+      router.push('/dashboard');
+    } catch (err) {
+      setError('Failed to login');
+      console.error(err);
+    }
   };
 
-  if (isAuthenticated) {
-    return <p>You are logged in!</p>;
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleLogin} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Username
+          Email
         </label>
-        <Input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Enter your username"
-          className="mt-1 block w-full"
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="mt-1 block w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-gray-300"
         />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Password
         </label>
-        <Input
+        <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter your password"
-          className="mt-1 block w-full"
+          required
+          className="mt-1 block w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-gray-300"
         />
       </div>
-      <Button type="submit" className="w-full bg-blue-600 dark:bg-blue-700 text-white">
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+      <button
+        type="submit"
+        className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700"
+      >
         Login
-      </Button>
+      </button>
     </form>
   );
 }

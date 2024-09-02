@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { DarkModeToggle } from '@/components/ui/DarkModeToggle';
+import DarkModeToggle from '@/components/ui/DarkModeToggle';
 
 export default function NavBar() {
   return (
@@ -24,6 +24,9 @@ export default function NavBar() {
           </Link>
           <Link href="/settings" className="hover:text-gray-300">
             Settings
+          </Link>
+          <Link href="/signup" className="hover:text-gray-300">
+            SignUp
           </Link>
         </div>
         <div className="flex items-center space-x-4 mt-4 md:mt-0">

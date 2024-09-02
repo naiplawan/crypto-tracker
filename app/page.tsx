@@ -9,9 +9,9 @@ export default function Home() {
       <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
         <div className="flex justify-center mb-6">
           <Image
-            src="/next.svg"
+            src="/crypto.svg"
             alt="Next.js Logo"
-            width={120}
+            width={80}
             height={30}
             priority
             className="dark:invert"

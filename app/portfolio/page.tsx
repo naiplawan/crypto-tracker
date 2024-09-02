@@ -16,6 +16,20 @@ const calculatePercentageChange = (oldPrice: number | null, newPrice: number | n
   return `${percentageChange}%`;
 };
 
+// Skeleton Loader component
+const SkeletonLoader = () => {
+  return (
+    <div className="space-y-6 animate-pulse">
+      <div className="h-6 bg-gray-300 rounded w-1/4"></div>
+      <div className="h-6 bg-gray-300 rounded w-1/2"></div>
+      <div className="h-48 bg-gray-300 rounded"></div>
+      <div className="h-6 bg-gray-300 rounded w-1/4"></div>
+      <div className="h-48 bg-gray-300 rounded"></div>
+      <div className="h-48 bg-gray-300 rounded"></div>
+    </div>
+  );
+};
+
 export default function Dashboard() {
   const [btcPrice, setBtcPrice] = useState<number | null>(null);
   const [ethPrice, setEthPrice] = useState<number | null>(null);
@@ -75,28 +89,19 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <SkeletonLoader />;
   }
 
   if (error) {
     return <p>{error}</p>;
   }
 
-  const { pieData, totalValue } = processPieData(portfolioData, filter);
-  const barChartData = processBarChartData(portfolioData, filter);
-  const pnlData: PnlData[] = calculatePnl(portfolioData, filter);
+  const { pieData, totalValue } = processPieData(portfolioData);
+  const barChartData = processBarChartData(portfolioData);
+  const pnlData: PnlData[] = calculatePnl(portfolioData);
 
   return (
     <div className="space-y-6">
-      {/* Filter Dropdown */}
-      <div className="flex justify-end">
-        <select value={filter} onChange={handleFilterChange} className="p-2 border rounded">
-          <option value="day">Last 24 hours</option>
-          <option value="week">Last 7 days</option>
-          <option value="month">Last 30 days</option>
-          <option value="all">All time</option>
-        </select>
-      </div>
 
       {/* Cryptocurrency Prices */}
       <Card>

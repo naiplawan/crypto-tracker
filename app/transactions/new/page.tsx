@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectItem } from '@/components/ui/select';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -19,35 +19,21 @@ export default function NewTransaction() {
   const [availableCryptos, setAvailableCryptos] = useState([]);
   const [availableWallets, setAvailableWallets] = useState([]);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch available cryptocurrencies and wallets on component mount
+  // Mock data for available cryptocurrencies and wallets
   useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        const [cryptoRes, walletRes] = await Promise.all([
-          fetch('/api/cryptocurrencies'),
-          fetch('/api/wallets')
-        ]);
+    const mockCryptos = [
+      { name: 'Bitcoin', symbol: 'BTC' },
+      { name: 'Ethereum', symbol: 'ETH' },
+    ];
+    const mockWallets = [
+      { name: 'Wallet 1', address: 'address1' },
+      { name: 'Wallet 2', address: 'address2' },
+    ];
 
-        if (cryptoRes.ok) {
-          const cryptos = await cryptoRes.json();
-          setAvailableCryptos(cryptos);
-        } else {
-          setError('Failed to fetch cryptocurrencies.');
-        }
-
-        if (walletRes.ok) {
-          const wallets = await walletRes.json();
-          setAvailableWallets(wallets);
-        } else {
-          setError('Failed to fetch wallets.');
-        }
-      } catch (err) {
-        setError('An error occurred while fetching options.');
-      }
-    };
-
-    fetchOptions();
+    setAvailableCryptos(mockCryptos);
+    setAvailableWallets(mockWallets);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,6 +41,11 @@ export default function NewTransaction() {
 
     if (!cryptoSymbol || !amount || !pricePerCoin || !walletName) {
       setError('Please fill in all fields.');
+      return;
+    }
+
+    if (parseFloat(amount) <= 0 || parseFloat(pricePerCoin) <= 0) {
+      setError('Amount and Price per coin must be positive numbers.');
       return;
     }
 
@@ -69,22 +60,20 @@ export default function NewTransaction() {
       walletName,
     };
 
-    try {
-      const response = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(transactionData),
-      });
+    setIsSubmitting(true);
+    setError('');
 
-      if (response.ok) {
-        router.push('/dashboard'); // Redirect to the dashboard after successful submission
-      } else {
-        setError('Failed to submit the transaction. Please try again.');
-      }
+    try {
+      // Mock API call
+      console.log('Submitting transaction:', transactionData);
+      // Simulate a successful response
+      setTimeout(() => {
+        setIsSubmitting(false);
+        router.push('/portfolio'); 
+      }, 1000);
     } catch (error) {
       setError('An error occurred. Please try again.');
+      setIsSubmitting(false);
     }
   };
 
@@ -99,29 +88,29 @@ export default function NewTransaction() {
             {error && <p className="text-red-500 text-sm">{error}</p>}
             <div>
               <Label htmlFor="cryptoSymbol">Cryptocurrency Symbol</Label>
-              <Select
-                id="cryptoSymbol"
-                value={cryptoSymbol}
-                onValueChange={setCryptoSymbol}
-                className="mt-1"
-              >
-                {availableCryptos.map((crypto) => (
-                  <SelectItem key={crypto.symbol} value={crypto.symbol}>
-                    {crypto.name} ({crypto.symbol})
-                  </SelectItem>
-                ))}
+              <Select value={cryptoSymbol} onValueChange={setCryptoSymbol}>
+                <SelectTrigger id="cryptoSymbol">
+                  <SelectValue placeholder="Select a cryptocurrency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableCryptos.map((crypto) => (
+                    <SelectItem key={crypto.symbol} value={crypto.symbol}>
+                      {crypto.name} ({crypto.symbol})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
             <div>
               <Label htmlFor="transactionType">Transaction Type</Label>
-              <Select
-                id="transactionType"
-                value={transactionType}
-                onValueChange={setTransactionType}
-                className="mt-1"
-              >
-                <SelectItem value="buy">Buy</SelectItem>
-                <SelectItem value="sell">Sell</SelectItem>
+              <Select value={transactionType} onValueChange={setTransactionType}>
+                <SelectTrigger id="transactionType">
+                  <SelectValue placeholder="Select transaction type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="buy">Buy</SelectItem>
+                  <SelectItem value="sell">Sell</SelectItem>
+                </SelectContent>
               </Select>
             </div>
             <div>
@@ -148,21 +137,25 @@ export default function NewTransaction() {
             </div>
             <div>
               <Label htmlFor="walletName">Wallet Name</Label>
-              <Select
-                id="walletName"
-                value={walletName}
-                onValueChange={setWalletName}
-                className="mt-1"
-              >
-                {availableWallets.map((wallet) => (
-                  <SelectItem key={wallet.address} value={wallet.name}>
-                    {wallet.name}
-                  </SelectItem>
-                ))}
+              <Select value={walletName} onValueChange={setWalletName}>
+                <SelectTrigger id="walletName">
+                  <SelectValue placeholder="Select a wallet" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableWallets.map((wallet) => (
+                    <SelectItem key={wallet.address} value={wallet.name}>
+                      {wallet.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
-            <Button type="submit" className="w-full bg-blue-600 dark:bg-blue-700 text-white mt-4">
-              Add Transaction
+            <Button
+              type="submit"
+              className="w-full bg-blue-600 dark:bg-blue-700 text-white mt-4"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'Add Transaction'}
             </Button>
           </form>
         </CardContent>

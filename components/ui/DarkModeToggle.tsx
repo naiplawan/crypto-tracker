@@ -1,48 +1,37 @@
-"use client";
-
-import * as React from "react";
-import { Moon, Sun } from "lucide-react";
+import React, { useEffect } from "react";
 import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Toggle } from "@/components/ui/toggle";
+import SunIcon from "/icons/sun.svg";
+import MoonIcon from "/icons/moon.svg";
 
-export function DarkModeToggle() {
+export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const isDark = theme === "dark";
+
+  useEffect(() => {
+    if (!theme) setTheme("light");
+  }, [theme, setTheme]);
+
+  const handleToggle = () => {
+    setTheme(isDark ? "light" : "dark");
+  };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onClick={() => setTheme("light")}
-          className={theme === "light" ? "font-bold" : ""}
-        >
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => setTheme("dark")}
-          className={theme === "dark" ? "font-bold" : ""}
-        >
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => setTheme("system")}
-          className={theme === "system" ? "font-bold" : ""}
-        >
-          System
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Toggle
+      pressed={isDark}
+      onPressedChange={handleToggle}
+      className="flex items-center justify-between w-16 h-8 p-1 bg-gray-200 rounded-full dark:bg-gray-800"
+    >
+      <img
+        src={SunIcon.src}
+        alt="Light Mode"
+        className={`w-6 h-6 transition-transform ${isDark ? "transform translate-x-full" : ""}`}
+      />
+      <img
+        src={MoonIcon.src}
+        alt="Dark Mode"
+        className={`w-6 h-6 transition-transform ${isDark ? "" : "transform translate-x-full"}`}
+      />
+    </Toggle>
   );
 }

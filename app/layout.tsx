@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import DarkModeToggle from "@/components/ui/DarkModeToggle";
+import NavBar from "@/components/ui/NavBar";
 import "../styles/globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -26,11 +26,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <header className="bg-blue-600 dark:bg-blue-700 text-white py-4 px-5 mb-10">
-            <div className="container mx-auto flex justify-between items-center">
-              <h1 className="text-3xl font-bold">My Crypto Dashboard</h1>
-              <DarkModeToggle />
-            </div>
+          <header>
+            <NavBar /> {/* Include the NavBar component */}
           </header>
           <main className="container mx-auto py-8 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             {children}

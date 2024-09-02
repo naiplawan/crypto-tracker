@@ -6,7 +6,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
+ 
 model User {
   id            Int      @id @default(autoincrement())
   username      String   @unique
@@ -30,6 +30,8 @@ model Portfolio {
   user         User                        @relation(fields: [userId], references: [id])
   transactions Transaction[]
   coins        PortfolioToCryptocurrency[]
+
+  @@index([userId]) // Add index for performance
 }
 
 model Cryptocurrency {
@@ -44,18 +46,22 @@ model Cryptocurrency {
   priceHistory PriceHistory[]
   alerts       Alert[]
   portfolios   PortfolioToCryptocurrency[]
+
+  @@index([symbol]) // Add index for performance
 }
 
 model Wallet {
   id         Int      @id @default(autoincrement())
   userId     Int
   name       String
-  address    String?
+  address    String   @unique
   type       String
   created_at DateTime @default(now())
 
   user         User          @relation(fields: [userId], references: [id])
   transactions Transaction[]
+
+  @@index([userId]) // Add index for performance
 }
 
 model Transaction {
@@ -76,6 +82,11 @@ model Transaction {
   portfolio      Portfolio      @relation(fields: [portfolioId], references: [id])
   cryptocurrency Cryptocurrency @relation(fields: [cryptoId], references: [id])
   wallet         Wallet         @relation(fields: [walletId], references: [id])
+
+  @@index([userId])
+  @@index([portfolioId])
+  @@index([cryptoId])
+  @@index([walletId])
 }
 
 model PriceHistory {
@@ -84,9 +95,13 @@ model PriceHistory {
   price      Float
   volume     Float?
   market_cap Float?
-  timestamp  DateTime @default(now())
+  timestamp  DateTime
 
   cryptocurrency Cryptocurrency @relation(fields: [cryptoId], references: [id])
+
+  @@unique([cryptoId, timestamp]) // Composite unique constraint
+  @@index([cryptoId])
+  @@index([timestamp])
 }
 
 model Alert {
@@ -100,6 +115,9 @@ model Alert {
 
   user           User           @relation(fields: [userId], references: [id])
   cryptocurrency Cryptocurrency @relation(fields: [cryptoId], references: [id])
+
+  @@index([userId])
+  @@index([cryptoId])
 }
 
 model UserSettings {
@@ -111,6 +129,8 @@ model UserSettings {
   updated_at               DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model PortfolioToCryptocurrency {
@@ -119,5 +139,7 @@ model PortfolioToCryptocurrency {
   portfolioId      Int
   cryptocurrencyId Int
 
-  @@id([portfolioId, cryptocurrencyId]) // This defines a composite primary key
+  @@id([portfolioId, cryptocurrencyId]) // Composite primary key
+  @@index([portfolioId])
+  @@index([cryptocurrencyId])
 }

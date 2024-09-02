@@ -8,7 +8,7 @@ import Image from 'next/image';
 export default function Home() {
   // Dummy user credentials
   const dummyUser = {
-    email: 'user@123',
+    email: 'admin@123',
     password: '123',
   };
 

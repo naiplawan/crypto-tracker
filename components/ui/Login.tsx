@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Use correct import for Next.js 13+
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -30,7 +31,7 @@ export default function Login() {
       }
 
       console.log('Logged in successfully with User ID:', data.userId);
-      router.push('/dashboard');
+      router.push('/portfolio');
     } catch (err) {
       setError('Failed to login');
       console.error(err);
@@ -38,9 +39,9 @@ export default function Login() {
   };
 
   return (
-    <form onSubmit={handleLogin} className="space-y-4">
+    <form onSubmit={handleLogin} className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-sm font-medium text-foreground dark:text-gray-100">
           Email
         </label>
         <input
@@ -48,11 +49,11 @@ export default function Login() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="mt-1 block w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-gray-300"
+          className="mt-1 block w-full p-2 border border-input rounded dark:bg-muted dark:text-white"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-sm font-medium text-foreground dark:text-gray-100">
           Password
         </label>
         <input
@@ -60,16 +61,21 @@ export default function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="mt-1 block w-full p-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-gray-300"
+          className="mt-1 block w-full p-2 border border-input rounded dark:bg-muted dark:text-secondary-foreground"
         />
       </div>
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
       <button
         type="submit"
-        className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700"
+        className="w-full py-2 px-4 bg-primary text-primary-foreground rounded hover:bg-secondary-foreground dark:hover:bg-primary"
       >
         Login
       </button>
+      <div className="text-center mt-4">
+        <Link href="/signup" className="hover:text-secondary-foreground text-primary dark:text-gray-100">
+          Don't have an account? Sign Up
+        </Link>
+      </div>
     </form>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import Login from "@/components/ui/Login"; // Adjust the import path based on where your Login component is located.
+import Login from "@/components/ui/Login"; 
 import Image from 'next/image';
 
 export default function Home() {

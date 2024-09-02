@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prismaClient';
-import { Portfolio } from '@/types/interface';
 
 // Type for the transformed transaction data
 interface TransformedTransaction {

@@ -6,66 +6,63 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
- 
+
 model User {
-  id            Int      @id @default(autoincrement())
-  username      String   @unique
-  email         String   @unique
+  id            Int           @id @default(autoincrement())
+  username      String        @unique
+  email         String        @unique
   password_hash String
-  portfolios    Portfolio[]
-  wallets       Wallet[]
-  transactions  Transaction[]
   alerts        Alert[]
+  portfolios    Portfolio[]
+  transactions  Transaction[]
   settings      UserSettings?
+  wallets       Wallet[]
 }
 
 model Portfolio {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  name        String
-  description String?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
-
+  id           Int                         @id @default(autoincrement())
+  userId       Int
+  name         String
+  description  String?
+  created_at   DateTime                    @default(now())
+  updated_at   DateTime                    @default(now())
   user         User                        @relation(fields: [userId], references: [id])
-  transactions Transaction[]
   coins        PortfolioToCryptocurrency[]
+  transactions Transaction[]
 
-  @@index([userId]) // Add index for performance
+  @@index([userId])
 }
 
 model Cryptocurrency {
-  id            Int       @id @default(autoincrement())
-  symbol        String    @unique
+  id            Int                         @id @default(autoincrement())
+  symbol        String                      @unique
   name          String
   current_price Float?
   market_cap    Float?
   last_updated  DateTime?
+  alerts        Alert[]
+  portfolios    PortfolioToCryptocurrency[]
+  priceHistory  PriceHistory[]
+  transactions  Transaction[]
 
-  transactions Transaction[]
-  priceHistory PriceHistory[]
-  alerts       Alert[]
-  portfolios   PortfolioToCryptocurrency[]
-
-  @@index([symbol]) // Add index for performance
+  @@index([symbol])
 }
 
 model Wallet {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  name       String
-  address    String   @unique
-  type       String
-  created_at DateTime @default(now())
-
-  user         User          @relation(fields: [userId], references: [id])
+  id           Int           @id @default(autoincrement())
+  userId       Int
+  name         String
+  address      String        @unique
+  type         String
+  created_at   DateTime      @default(now())
   transactions Transaction[]
+  user         User          @relation(fields: [userId], references: [id])
 
-  @@index([userId]) // Add index for performance
+  @@index([userId])
 }
 
 model Transaction {
-  id               Int       @id @default(autoincrement())
+  id               Int            @id @default(autoincrement())
   userId           Int
   portfolioId      Int
   cryptoId         Int
@@ -76,12 +73,11 @@ model Transaction {
   total_value      Float?
   fee              Float?
   transaction_date DateTime?
-  created_at       DateTime  @default(now())
-
-  user           User           @relation(fields: [userId], references: [id])
-  portfolio      Portfolio      @relation(fields: [portfolioId], references: [id])
-  cryptocurrency Cryptocurrency @relation(fields: [cryptoId], references: [id])
-  wallet         Wallet         @relation(fields: [walletId], references: [id])
+  created_at       DateTime       @default(now())
+  cryptocurrency   Cryptocurrency @relation(fields: [cryptoId], references: [id])
+  portfolio        Portfolio      @relation(fields: [portfolioId], references: [id])
+  user             User           @relation(fields: [userId], references: [id])
+  wallet           Wallet         @relation(fields: [walletId], references: [id])
 
   @@index([userId])
   @@index([portfolioId])
@@ -90,31 +86,29 @@ model Transaction {
 }
 
 model PriceHistory {
-  id         Int      @id @default(autoincrement())
-  cryptoId   Int
-  price      Float
-  volume     Float?
-  market_cap Float?
-  timestamp  DateTime
-
+  id             Int            @id @default(autoincrement())
+  cryptoId       Int
+  price          Float
+  volume         Float?
+  market_cap     Float?
+  timestamp      DateTime
   cryptocurrency Cryptocurrency @relation(fields: [cryptoId], references: [id])
 
-  @@unique([cryptoId, timestamp]) // Composite unique constraint
+  @@unique([cryptoId, timestamp])
   @@index([cryptoId])
   @@index([timestamp])
 }
 
 model Alert {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  cryptoId   Int
-  type       String
-  threshold  Float
-  is_active  Boolean  @default(true)
-  created_at DateTime @default(now())
-
-  user           User           @relation(fields: [userId], references: [id])
+  id             Int            @id @default(autoincrement())
+  userId         Int
+  cryptoId       Int
+  type           String
+  threshold      Float
+  is_active      Boolean        @default(true)
+  created_at     DateTime       @default(now())
   cryptocurrency Cryptocurrency @relation(fields: [cryptoId], references: [id])
+  user           User           @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([cryptoId])
@@ -127,19 +121,18 @@ model UserSettings {
   theme_preference         String   @default("light")
   notification_preferences Json?
   updated_at               DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
+  user                     User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
 
 model PortfolioToCryptocurrency {
-  portfolio        Portfolio      @relation(fields: [portfolioId], references: [id])
-  cryptocurrency   Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id])
   portfolioId      Int
   cryptocurrencyId Int
+  cryptocurrency   Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id])
+  portfolio        Portfolio      @relation(fields: [portfolioId], references: [id])
 
-  @@id([portfolioId, cryptocurrencyId]) // Composite primary key
+  @@id([portfolioId, cryptocurrencyId])
   @@index([portfolioId])
   @@index([cryptocurrencyId])
 }

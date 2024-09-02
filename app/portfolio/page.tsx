@@ -1,147 +1,128 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { PortfolioPieChart, PortfolioBarChart, PnlBarChart } from '@/components/ui/charts/PortfolioCharts';
-import { processPieData, processBarChartData, calculatePnl } from '@/utils/portfolioUtils';
-import { Portfolio, PriceData, PnlData } from '@/types/interface';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Helper function to calculate percentage change
-const calculatePercentageChange = (oldPrice: number | null, newPrice: number | null): string => {
-  if (oldPrice == null || newPrice == null) return 'N/A';
+interface Cryptocurrency {
+  id: string;
+  symbol: string;
+  name: string;
+  current_price: number;
+}
 
-  const change = newPrice - oldPrice;
-  const percentageChange = ((change / oldPrice) * 100).toFixed(2);
+interface Wallet {
+  id: string;
+  name: string;
+  address: string;
+  type: string;
+}
 
-  return `${percentageChange}%`;
-};
+interface Transaction {
+  id: string;
+  cryptocurrency: Cryptocurrency;
+  amount: number;
+  price_per_coin: number;
+  created_at: string;
+  wallet: Wallet;
+}
 
-// Skeleton Loader component
-const SkeletonLoader = () => {
-  return (
-    <div className="space-y-6 animate-pulse">
-      <div className="h-6 bg-gray-300 rounded w-1/4"></div>
-      <div className="h-6 bg-gray-300 rounded w-1/2"></div>
-      <div className="h-48 bg-gray-300 rounded"></div>
-      <div className="h-6 bg-gray-300 rounded w-1/4"></div>
-      <div className="h-48 bg-gray-300 rounded"></div>
-      <div className="h-48 bg-gray-300 rounded"></div>
-    </div>
-  );
-};
+interface Portfolio {
+  id: string;
+  name: string;
+  description: string;
+  transactions: Transaction[];
+}
 
-export default function Dashboard() {
-  const [btcPrice, setBtcPrice] = useState<number | null>(null);
-  const [ethPrice, setEthPrice] = useState<number | null>(null);
-  const [prevBtcPrice, setPrevBtcPrice] = useState<number | null>(null);
-  const [prevEthPrice, setPrevEthPrice] = useState<number | null>(null);
-  const [portfolioData, setPortfolioData] = useState<Portfolio[]>([]);
+export default function PortfolioPage() {
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [filter, setFilter] = useState<string>('month');
-  const [showPnl, setShowPnl] = useState<boolean>(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchPortfolioData = async () => {
+    async function fetchPortfolios() {
       try {
-        const portfolioResponse = await fetch('/api/portfolio');
-        const portfolioData: Portfolio[] = await portfolioResponse.json();
-
-        if (portfolioResponse.ok) {
-          setPortfolioData(portfolioData);
-          fetchPrices(); // Initial fetch of prices
-        } else {
-          setError('Failed to load portfolio data.');
+        const response = await fetch('/api/portfolio');
+        if (!response.ok) {
+          throw new Error('Failed to fetch portfolios');
         }
+        const data: Portfolio[] = await response.json();
+        setPortfolios(data);
       } catch (error) {
-        setError('Failed to load data.');
+        setError(error.message);
       } finally {
         setLoading(false);
       }
-    };
+    }
 
-    const fetchPrices = async () => {
-      try {
-        const priceResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
-        const priceData: PriceData = await priceResponse.json();
-
-        setPrevBtcPrice(btcPrice);
-        setPrevEthPrice(ethPrice);
-        setBtcPrice(priceData.bitcoin.usd);
-        setEthPrice(priceData.ethereum.usd);
-      } catch (error) {
-        console.error('Error fetching prices:', error);
-      }
-    };
-
-    fetchPortfolioData();
-
-    const intervalId = setInterval(() => {
-      fetchPrices();
-    }, 60000); // Fetch every 1 minute
-
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount
-  }, [btcPrice, ethPrice]);
-
-  const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setFilter(event.target.value);
-    setShowPnl(event.target.value !== 'all'); // Example logic to hide PnL chart based on filter
-  };
+    fetchPortfolios();
+  }, []);
 
   if (loading) {
-    return <SkeletonLoader />;
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-1/4" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-4 w-3/4 mb-4" />
+            <Skeleton className="h-4 w-1/2 mb-4" />
+            <Skeleton className="h-4 w-full mb-4" />
+            <Skeleton className="h-4 w-3/4 mb-4" />
+            <Skeleton className="h-4 w-1/2 mb-4" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-1/4" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-4 w-3/4 mb-4" />
+            <Skeleton className="h-4 w-1/2 mb-4" />
+            <Skeleton className="h-4 w-full mb-4" />
+            <Skeleton className="h-4 w-3/4 mb-4" />
+            <Skeleton className="h-4 w-1/2 mb-4" />
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (error) {
-    return <p>{error}</p>;
+    return <div className="text-destructive">{error}</div>;
   }
 
-  const { pieData, totalValue } = processPieData(portfolioData);
-  const barChartData = processBarChartData(portfolioData);
-  const pnlData: PnlData[] = calculatePnl(portfolioData);
+  const handleCardClick = (portfolioId: string) => {
+    router.push(`/dashboard?portfolioId=${portfolioId}`);
+  };
 
   return (
     <div className="space-y-6">
-
-      {/* Cryptocurrency Prices */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Cryptocurrency Prices</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className={`text-xl ${btcPrice && prevBtcPrice && btcPrice > prevBtcPrice ? 'text-green-500' : 'text-red-500'}`}>
-            Bitcoin (BTC): ${btcPrice}
-            <span className={`text-sm ${btcPrice && prevBtcPrice && btcPrice > prevBtcPrice ? 'text-green-500' : 'text-red-500'}`}>
-              ({calculatePercentageChange(prevBtcPrice, btcPrice)})
-            </span>
-          </p>
-          <p className={`text-xl ${ethPrice && prevEthPrice && ethPrice > prevEthPrice ? 'text-green-500' : 'text-red-500'}`}>
-            Ethereum (ETH): ${ethPrice}
-            <span className={`text-sm ${ethPrice && prevEthPrice && ethPrice > prevEthPrice ? 'text-green-500' : 'text-red-500'}`}>
-              ({calculatePercentageChange(prevEthPrice, ethPrice)})
-            </span>
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Total Portfolio Value */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Total Portfolio Value</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-2xl font-bold">${totalValue.toFixed(2)}</p>
-        </CardContent>
-      </Card>
-
-      {/* Portfolio Pie Chart */}
-      <PortfolioPieChart portfolioData={portfolioData} />
-
-      {/* Portfolio Bar Chart */}
-      <PortfolioBarChart portfolioData={portfolioData} />
-
-      {/* PnL Bar Chart (conditionally render) */}
-      {showPnl && <PnlBarChart portfolioData={portfolioData} prices={{ bitcoin: btcPrice || 0, ethereum: ethPrice || 0 }} />}
+      {portfolios.map((portfolio) => (
+        <Card key={portfolio.id} onClick={() => handleCardClick(portfolio.id)} className="cursor-pointer hover:bg-muted">
+          <CardHeader>
+            <CardTitle>{portfolio.name}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>{portfolio.description}</p>
+            <div className="space-y-4 mt-4">
+              {portfolio.transactions.map((transaction) => (
+                <div key={transaction.id} className="border p-4 rounded-lg">
+                  <p className="text-lg font-semibold">{transaction.cryptocurrency.name} ({transaction.cryptocurrency.symbol})</p>
+                  <p>Amount: {transaction.amount}</p>
+                  <p>Price per Coin: ${transaction.price_per_coin.toFixed(2)}</p>
+                  <p>Total Value: ${(transaction.amount * transaction.price_per_coin).toFixed(2)}</p>
+                  <p>Wallet: {transaction.wallet.name}</p>
+                  <p className="text-gray-500 text-sm">Date: {new Date(transaction.created_at).toLocaleDateString()}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }

@@ -26,8 +26,7 @@ export default function SignupPage() {
       });
 
       if (response.ok) {
-        // Redirect to the login page or another page after successful signup
-        router.push('/login');
+        router.push('/');
       } else {
         const errorData = await response.json();
         setError(errorData.message || 'Something went wrong');

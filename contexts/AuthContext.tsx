@@ -15,8 +15,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const login = (username: string, password: string) => {
-    // Here you would typically check against a real user database or API
-    // For simplicity, we're using hardcoded credentials
     if (username === "admin" && password === "123") {
       setIsAuthenticated(true);
     }

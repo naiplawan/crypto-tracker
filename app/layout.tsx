@@ -1,7 +1,7 @@
-// app/layout.tsx (Server Component)
+// app/layout.tsx
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
-import ClientLayout from "@/components/ui/ClientLayout"
+import ClientLayout from "@/components/ui/ClientLayout";
 import "@/styles/globals.css";
 
 export default function RootLayout({
